@@ -51,7 +51,7 @@ for (i in 1:length(vec.Topics)){
 result <- as.data.frame(result)
 names(result)=c("Topic","Year","Max_State","Max_Value","Min_State","Min_Value")
 
-ggplot(data = result,aes(x=Topic, y=Max_Value, fill=Topic)) +
+ggplot(data = result,aes(x=factor(Topic, levels = Topic[order(Max_Value)]), y=as.numeric(as.character(Max_Value)), fill=Topic)) +
     geom_bar(position = "dodge", stat =  "identity") +
     facet_grid(.~Year, scales = "free_y")+
     theme(axis.text.x=element_blank()) +
@@ -61,7 +61,9 @@ ggplot(data = result,aes(x=Topic, y=Max_Value, fill=Topic)) +
               angle=90, 
               hjust=0.1,
               vjust=0.5, 
-              colour="black") 
+              colour="black")
++
+  scale_x_discrete(limits=Topic)
 
 
 ggplot(data = result.mean,aes(x=YearStart, y=mean.value, fill=YearStart)) +
@@ -96,11 +98,36 @@ ggplot(data = result.mean,aes(x=YearStart, y=mean.value, fill=YearStart)) +
     }
     
   }
-}
-
+  }
+  
   aov.df=chronic.mortality.data
   aov.df$DataValueAlt=log(aov.df$DataValueAlt)
-      
-df_aov = aov(DataValueAlt ~ Topic + YearStart ,data = aov.df)
-summary(df_aov)  
-print(df_aov)
+  
+  df_aov = aov(DataValueAlt ~ Topic + YearStart ,data = aov.df)
+  summary(df_aov)  
+  print(df_aov)
+  
+  
+names(chronic.mortality.ByRace)
+
+states=map_data("state")
+str(states)
+chronic.mortality.ByRace$region=tolower(chronic.mortality.ByRace$LocationDesc)
+states=merge(states,chronic.mortality.ByRace,by="region",all.x=T)
+str(states)
+# Life expectancy in African American
+ggplot(states, aes(x = long, y = lat, group = group, fill = DataValueAlt)) + 
+  geom_polygon(color = "white") +
+  scale_fill_gradient(name = "Years", low = "#ffe8ee", high = "#c81f49", guide = "colorbar", na.value="#eeeeee", breaks = pretty_breaks(n = 5)) +
+  #labs(title=Topic) +
+  coord_map() +
+  facet_grid(YearStart~Topic)+
+  geom_text(aes(label=region),
+            size=3, 
+            angle=90, 
+            hjust=0.1,
+            vjust=0.5, 
+            colour="black")
+
+  
+  

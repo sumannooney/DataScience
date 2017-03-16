@@ -52,57 +52,57 @@ result = NULL
 
 for (i in 1:length(vec.Topics)){
   print(vec.Topics[i])
-    for(j in 1:length(vec.years)){
-      tempdata <- chronic.mortality.data %>% 
-                      filter(
-                              Topic     == vec.Topics[i],
-                              YearStart == vec.years[j]
-                            )
-      
-      result <- rbind(result, 
-                        c(
-                          vec.Topics[i],vec.years[j],
-                          tempdata[which.max(tempdata$DataValueAlt),"LocationDesc"],
-                          tempdata[which.max(tempdata$DataValueAlt),"DataValueAlt"],
-                          tempdata[which.min(tempdata$DataValueAlt),"LocationDesc"],
-                          tempdata[which.min(tempdata$DataValueAlt),"DataValueAlt"]
-                          )
-                      )
-    }
+  for(j in 1:length(vec.years)){
+    tempdata <- chronic.mortality.data %>% 
+      filter(
+        Topic     == vec.Topics[i],
+        YearStart == vec.years[j]
+      )
+    
+    result <- rbind(result, 
+                    c(
+                      vec.Topics[i],vec.years[j],
+                      tempdata[which.max(tempdata$DataValueAlt),"LocationDesc"],
+                      tempdata[which.max(tempdata$DataValueAlt),"DataValueAlt"],
+                      tempdata[which.min(tempdata$DataValueAlt),"LocationDesc"],
+                      tempdata[which.min(tempdata$DataValueAlt),"DataValueAlt"]
+                    )
+    )
   }
+}
 result <- as.data.frame(result)
 names(result) <- c(
-                  "Topic",
-                  "Year",
-                  "Max_State",
-                  "Max_Value",
-                  "Min_State",
-                  "Min_Value"
-                )
+  "Topic",
+  "Year",
+  "Max_State",
+  "Max_Value",
+  "Min_State",
+  "Min_Value"
+)
 
 
 chronic.mortality.ByRace <- data.read  %>% 
-                    select(
-                          LocationDesc,
-                          Topic,
-                          YearStart,
-                          DataValueType,
-                          DataValueUnit,
-                          DataValueAlt,
-                          StratificationCategory1,
-                          Stratification1,
-                          GeoLocation) %>% 
-                    filter(
-                            DataValueUnit %in% c("cases per 100,000"),
-                            StratificationCategory1 == "Race/Ethnicity",
-                            DataValueType =="Crude Rate",
-                            !Topic %in% c(
-                                            "Asthma",
-                                            "Diabetes",
-                                            "Older Adults",
-                                            "Overarching Conditions"
-                                          )
-                            )
+  select(
+    LocationDesc,
+    Topic,
+    YearStart,
+    DataValueType,
+    DataValueUnit,
+    DataValueAlt,
+    StratificationCategory1,
+    Stratification1,
+    GeoLocation) %>% 
+  filter(
+    DataValueUnit %in% c("cases per 100,000"),
+    StratificationCategory1 == "Race/Ethnicity",
+    DataValueType =="Crude Rate",
+    !Topic %in% c(
+      "Asthma",
+      "Diabetes",
+      "Older Adults",
+      "Overarching Conditions"
+    )
+  )
 
 na.rows.race <- apply(chronic.mortality.ByRace,1,function(x){any(is.na(x))})
 
@@ -111,16 +111,16 @@ chronic.mortality.ByRace <- chronic.mortality.ByRace[!na.rows.race,]
 
 
 ggplot(data = result,aes(x=Topic, y=Max_Value, fill=Topic)) +
-    geom_bar(position = "dodge", stat =  "identity") +
-    facet_grid(.~Year, scales = "free_y")+
-    theme(axis.text.x=element_blank()) +
-    #coord_flip() 
-    geom_text(aes(label=Max_State),
-              size=3, 
-              angle=90, 
-              hjust=0.1,
-              vjust=0.5, 
-              colour="black") 
+  geom_bar(position = "dodge", stat =  "identity") +
+  facet_grid(.~Year, scales = "free_y")+
+  theme(axis.text.x=element_blank()) +
+  #coord_flip() 
+  geom_text(aes(label=Max_State),
+            size=3, 
+            angle=90, 
+            hjust=0.1,
+            vjust=0.5, 
+            colour="black") 
 
 
 ggplot(data = result.mean,aes(x=YearStart, y=mean.value, fill=YearStart)) +
@@ -128,23 +128,23 @@ ggplot(data = result.mean,aes(x=YearStart, y=mean.value, fill=YearStart)) +
   facet_grid(.~Topic)+
   theme(axis.text.x = element_blank()) +
   coord_flip() 
-  geom_text(aes(
-                label = mean.value),
-                size  = 3, 
-                angle = 90, 
-                hjust = 0.1,
-                vjust = 0.5, 
-                colour= "black"
-                ) 
+geom_text(aes(
+  label = mean.value),
+  size  = 3, 
+  angle = 90, 
+  hjust = 0.1,
+  vjust = 0.5, 
+  colour= "black"
+) 
 
 #  ggplot(data= result.mean, aes(Topic, mean.value))+
 #    geom_boxplot()
-  
-  #### Hypothesis
-  #NULL Hypothesis: Consistent across US over a period of time or less than the earlier years
-  #Alternate Hypothesis : Mortality is not consistent and is increasing year over year
 
-  for (j in 1:length(vec.Topics)) {
+#### Hypothesis
+#NULL Hypothesis: Consistent across US over a period of time or less than the earlier years
+#Alternate Hypothesis : Mortality is not consistent and is increasing year over year
+
+for (j in 1:length(vec.Topics)) {
   for (i in 1:(length(vec.years)-1)) {
     pop_A = chronic.mortality.data %>% select(DataValueAlt, Topic, YearStart) %>% filter(Topic == vec.Topics[j], YearStart==vec.years[i]) 
     pop_B = chronic.mortality.data %>% select(DataValueAlt, Topic, YearStart) %>% filter(Topic == vec.Topics[j], YearStart==vec.years[i+1]) 
@@ -162,9 +162,9 @@ ggplot(data = result.mean,aes(x=YearStart, y=mean.value, fill=YearStart)) +
   }
 }
 
-  aov.df=chronic.mortality.data
-  aov.df$DataValueAlt=log(aov.df$DataValueAlt)
-      
+aov.df=chronic.mortality.data
+aov.df$DataValueAlt=log(aov.df$DataValueAlt)
+
 df_aov = aov(DataValueAlt ~ Topic + YearStart ,data = aov.df)
 summary(df_aov)  
 print(df_aov)
@@ -184,6 +184,6 @@ chiTest$observed
 #p = ggplot(chronic.mortality.data, aes(x=DataValueAlt, fill=Topic)) + geom_density(alpha=.3)
 #p + facet_grid(.~ DataValueAlt)
 
-  ggplot(data = chronic.mortality.ByRace, aes(YearStart,DataValueAlt, fill=Topic))+
+ggplot(data = chronic.mortality.ByRace, aes(YearStart,DataValueAlt, fill=Topic))+
   geom_bar(stat="identity")+
   facet_wrap(LocationDesc ~ Stratification1, nrow=10 )
